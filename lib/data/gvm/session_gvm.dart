@@ -1,6 +1,6 @@
-/// global view model
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show ScaffoldMessenger, Text, SnackBar, Navigator;
 import 'package:flutter_blog/_core/utils/my_http.dart';
+import 'package:flutter_blog/data/model/user.dart';
 import 'package:flutter_blog/data/repository/user_repository.dart';
 import 'package:flutter_blog/main.dart';
 import 'package:flutter_blog/ui/pages/auth/join_page/join_fm.dart';
@@ -10,23 +10,22 @@ import 'package:logger/logger.dart';
 
 /// 1. 창고 관리자
 final sessionProvider = NotifierProvider<SessionGVM, SessionModel>(() {
+  // 의존하는 VM
+
   return SessionGVM();
 });
 
-/// 2. 창고 (상태가 변경되어도 화면에 알려주지 않음) watch x
+/// 2. 창고 (상태가 변경되어도, 화면 갱신 안함 - watch 하지마)
 class SessionGVM extends Notifier<SessionModel> {
-  /// 현재 컨텍스트를 가져올 수 있다
-  final mContext = navigatorKey.currentContext!; // ! -> 화면이 없는데 호출하는거 아니지?
+  final mContext = navigatorKey.currentContext!;
 
   @override
   SessionModel build() {
     return SessionModel();
   }
 
-  /// 트랜잭션
   Future<void> join(String username, String email, String password) async {
     Logger().d("username : ${username}, email : ${email}, password : ${password}");
-
     bool isValid = ref.read(joinProvider.notifier).validate();
     if (!isValid) {
       ScaffoldMessenger.of(mContext).showSnackBar(
@@ -37,7 +36,6 @@ class SessionGVM extends Notifier<SessionModel> {
 
     Map<String, dynamic> body = await UserRepository().join(username, email, password);
     if (!body["success"]) {
-      // 토스트 띄움
       ScaffoldMessenger.of(mContext).showSnackBar(
         SnackBar(content: Text("${body["errorMessage"]}")),
       );
@@ -67,19 +65,17 @@ class SessionGVM extends Notifier<SessionModel> {
       return;
     }
 
-    // 3. 토큰을 디바이스 저장
-    await secureStorage.write(key: "accessToken", value: body["response"]["accessToken"]);
+    // 3. 파싱
+    User user = User.fromMap(body["response"]);
 
-    // 4. 세션모델 갱신 -> fromMap 으로 대체
-    state = SessionModel(
-        id: body["response"]["id"],
-        username: body["response"]["username"],
-        imgUrl: body["response"]["imgUrl"],
-        accessToken: body["response"]["accessToken"],
-        isLogin: true);
+    // 4. 토큰을 디바이스 저장
+    await secureStorage.write(key: "accessToken", value: user.accessToken);
 
-    // 5. dio의 header에 토큰 세팅 -> fromMap 쓰면 state.accessToken 으로 가져오기
-    dio.options.headers["Authorization"] = body["response"]["accessToken"];
+    // 5. 세션모델 갱신
+    state = SessionModel(user: user, isLogin: true);
+
+    // 5. dio의 header에 토큰 세팅
+    dio.options.headers["Authorization"] = user.accessToken;
 
     // 6. 게시글 목록 페이지 이동
     Navigator.pushNamed(mContext, "/post/list");
@@ -88,13 +84,15 @@ class SessionGVM extends Notifier<SessionModel> {
   Future<void> logout() async {}
 }
 
-/// 3. 창고 데이터 타입
+/// 3. 창고 데이터 타입 (불변 아님)
 class SessionModel {
-  int? id;
-  String? username;
-  String? imgUrl;
-  String? accessToken;
+  User? user;
   bool? isLogin;
 
-  SessionModel({this.id, this.username, this.imgUrl, this.accessToken, this.isLogin = false});
+  SessionModel({this.user, this.isLogin = false});
+
+  @override
+  String toString() {
+    return 'SessionModel{user: $user, isLogin: $isLogin}';
+  }
 }
