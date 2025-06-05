@@ -15,7 +15,6 @@ class JoinFM extends Notifier<JoinModel> {
 
   void username(String username) {
     final error = validateUsername(username);
-    print("error : ${error}");
     state = state.copyWith(username: username, usernameError: error);
   }
 

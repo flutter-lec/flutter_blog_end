@@ -1,0 +1,61 @@
+/// global view model
+import 'package:flutter/material.dart';
+import 'package:flutter_blog/data/repository/user_repository.dart';
+import 'package:flutter_blog/main.dart';
+import 'package:flutter_blog/ui/pages/auth/join_page/join_fm.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
+
+/// 1. 창고 관리자
+final sessionProvider = NotifierProvider<SessionGVM, SessionModel>(() {
+  return SessionGVM();
+});
+
+/// 2. 창고 (상태가 변경되어도 화면에 알려주지 않음) watch x
+class SessionGVM extends Notifier<SessionModel> {
+  /// 현재 컨텍스트를 가져올 수 있다
+  final mContext = navigatorKey.currentContext!; // ! -> 화면이 없는데 호출하는거 아니지?
+
+  @override
+  SessionModel build() {
+    return SessionModel();
+  }
+
+  /// 트랜잭션
+  Future<void> join(String username, String email, String password) async {
+    Logger().d("username : ${username}, email : ${email}, password : ${password}");
+
+    bool isValid = ref.read(joinProvider.notifier).validate();
+    if (!isValid) {
+      ScaffoldMessenger.of(mContext).showSnackBar(
+        SnackBar(content: Text("유효성 검사 실패입니다")),
+      );
+      return;
+    }
+
+    Map<String, dynamic> body = await UserRepository().join(username, email, password);
+    if (!body["success"]) {
+      // 토스트 띄움
+      ScaffoldMessenger.of(mContext).showSnackBar(
+        SnackBar(content: Text("${body["errorMessage"]}")),
+      );
+      return;
+    }
+    
+    Navigator.pushNamed(mContext, "/login");
+  }
+
+  Future<void> login(String username, String password) async {}
+
+  Future<void> logout() async {}
+}
+
+/// 3. 창고 데이터 타입
+class SessionModel {
+  int? id;
+  String? username;
+  String? accessToken;
+  bool? isLogin;
+
+  SessionModel({this.id, this.username, this.accessToken, this.isLogin = false});
+}
