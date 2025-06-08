@@ -83,12 +83,16 @@ class SessionGVM extends Notifier<SessionModel> {
 
   Future<void> logout() async {
     // 1. 토큰 디바이스 제거
-
+    await secureStorage.delete(key: "accessToken");
+    
     // 2. 세션모델 초기화
+    state = SessionModel();
 
     // 3. dio 세팅 제거
+    dio.options.headers.remove("Authorization");
 
     // 4. login 페이지 이동
+    Navigator.pushNamed(mContext, "/login");
   }
 }
 
