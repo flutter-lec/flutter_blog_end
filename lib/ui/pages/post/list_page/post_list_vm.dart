@@ -26,14 +26,21 @@ class PostListVM extends Notifier<PostListModel?> {
 
 /// 3. 창고 데이터 타입 (불변 아님)
 class PostListModel {
-  bool isFirst;
-  bool isLast;
-  int pageNumber;
-  int size;
-  int totalPage;
-  List<Post> posts;
+  final bool isFirst;
+  final bool isLast;
+  final int pageNumber;
+  final int size;
+  final int totalPage;
+  final List<Post> posts;
 
-  PostListModel(this.isFirst, this.isLast, this.pageNumber, this.size, this.totalPage, this.posts);
+  PostListModel({
+    required this.isFirst,
+    required this.isLast,
+    required this.pageNumber,
+    required this.size,
+    required this.totalPage,
+    required this.posts,
+  });
 
   PostListModel.fromMap(Map<String, dynamic> data)
       : isFirst = data['isFirst'],
@@ -52,12 +59,12 @@ class PostListModel {
     List<Post>? posts,
   }) {
     return PostListModel(
-      isFirst ?? this.isFirst,
-      isLast ?? this.isLast,
-      pageNumber ?? this.pageNumber,
-      size ?? this.size,
-      totalPage ?? this.totalPage,
-      posts ?? this.posts,
+      isFirst: isFirst ?? this.isFirst,
+      isLast: isLast ?? this.isLast,
+      pageNumber: pageNumber ?? this.pageNumber,
+      size: size ?? this.size,
+      totalPage: totalPage ?? this.totalPage,
+      posts: posts ?? this.posts,
     );
   }
 
