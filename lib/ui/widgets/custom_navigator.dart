@@ -39,7 +39,6 @@ class CustomNavigation extends ConsumerWidget {
               const Divider(),
               TextButton(
                 onPressed: () {
-                  scaffoldKey.currentState!.openEndDrawer();
                   gvm.logout();
                 },
                 child: const Text(

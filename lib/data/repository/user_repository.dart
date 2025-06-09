@@ -30,11 +30,12 @@ class UserRepository {
     Map<String, dynamic> responseBody = response.data;
 
     // 3. 헤더에서 토큰을 꺼내야 함. 헤더에 토큰이 들어있음
-    String accessToken = "";
-    try {
-      accessToken = response.headers["Authorization"]![0];
-      responseBody["response"]["accessToken"] = accessToken;
-    } catch (e) {}
+    // 이제 body 안에 토큰을 넣어주기 때문에 헤더에 꺼낼 필요 없어짐
+    // String accessToken = "";
+    // try {
+    //   accessToken = response.headers["Authorization"]![0];
+    //   responseBody["response"]["accessToken"] = accessToken;
+    // } catch (e) {}
     Logger().d(responseBody);
 
     return responseBody;
