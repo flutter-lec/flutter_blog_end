@@ -23,7 +23,7 @@ class PostListItem extends StatelessWidget {
         height: 50,
         child: ClipOval(
           child: CachedNetworkImage(
-            imageUrl: "${baseUrl}${post.user.imgUrl}",
+            imageUrl: "${baseUrl}${post.user!.imgUrl}",
             placeholder: (context, url) => CircularProgressIndicator(),
             errorWidget: (context, url, error) => Icon(Icons.error),
             fit: BoxFit.cover,

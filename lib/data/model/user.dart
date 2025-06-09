@@ -1,13 +1,13 @@
 class User {
-  int? id;
-  String? username;
-  String? imgUrl;
+  int id;
+  String username;
+  String imgUrl;
   String? accessToken;
 
   User({
-    this.id,
-    this.username,
-    this.imgUrl,
+    required this.id,
+    required this.username,
+    required this.imgUrl,
     this.accessToken,
   });
 
