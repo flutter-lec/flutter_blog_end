@@ -97,6 +97,39 @@ class SessionGVM extends Notifier<SessionModel> {
     scaffoldKey.currentState!.openEndDrawer();
     Navigator.pushNamed(mContext, "/login");
   }
+
+  Future<void> autoLogin() async {
+    // 디바이스에서 토큰 값 가져오기
+    String? accessToken = await secureStorage.read(key: "accessToken");
+
+    if (accessToken == null) {
+      Navigator.pushNamed(mContext, "/login");
+      return;
+    }
+
+    // 1. 통신
+    Map<String, dynamic> body = await UserRepository().autoLogin(accessToken);
+
+    if (!body["success"]) {
+      ScaffoldMessenger.of(mContext).showSnackBar(
+        SnackBar(content: Text("${body["errorMessage"]}")),
+      );
+      Navigator.pushNamed(mContext, "/login"); // 현재 페이지 제거하고 이동하는걸로 변경
+      return;
+    }
+
+    User user = User.fromMap(body["response"]);
+    user.accessToken = accessToken;
+
+    // 5. 세션모델 갱신
+    state = SessionModel(user: user, isLogin: true);
+
+    // 5. dio의 header에 토큰 세팅 [Bearer <- 이거 들어가 있음]
+    dio.options.headers["Authorization"] = user.accessToken;
+
+    // 6. 게시글 목록 페이지 이동
+    Navigator.pushNamed(mContext, "/post/list");
+  }
 }
 
 /// 3. 창고 데이터 타입 (불변 아님)
