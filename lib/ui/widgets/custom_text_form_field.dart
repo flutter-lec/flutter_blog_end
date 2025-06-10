@@ -4,12 +4,14 @@ class CustomTextFormField extends StatelessWidget {
   final String hint;
   final bool obscureText;
   final Function(String)? onChanged; // 나중에 바운싱 구현
+  final String initialValue;
 
-  CustomTextFormField({required this.hint, this.obscureText = false, this.onChanged});
+  CustomTextFormField({required this.hint, this.obscureText = false, this.onChanged, this.initialValue = ""});
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      initialValue: initialValue,
       onChanged: onChanged,
       obscureText: obscureText,
       decoration: InputDecoration(

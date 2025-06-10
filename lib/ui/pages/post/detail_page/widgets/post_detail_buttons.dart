@@ -15,7 +15,7 @@ class PostDetailButtons extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     SessionModel sessionModel = ref.read(sessionProvider);
     PostDetailVM vm = ref.read(postDetailProvider(post.id).notifier);
-    
+
     return Visibility(
       visible: sessionModel.user!.id == post.user.id,
       child: Row(
@@ -29,7 +29,7 @@ class PostDetailButtons extends ConsumerWidget {
           ),
           IconButton(
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => PostUpdatePage()));
+              Navigator.push(context, MaterialPageRoute(builder: (_) => PostUpdatePage(post)));
             },
             icon: const Icon(CupertinoIcons.pen),
           ),
