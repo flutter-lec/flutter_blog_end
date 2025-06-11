@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart' show ScaffoldMessenger, Text, SnackBar, Navigator;
+import 'package:flutter/material.dart' show ScaffoldMessenger, Text, SnackBar, Navigator, MaterialPageRoute;
 import 'package:flutter_blog/_core/utils/my_http.dart';
 import 'package:flutter_blog/data/model/user.dart';
 import 'package:flutter_blog/data/repository/user_repository.dart';
 import 'package:flutter_blog/main.dart';
 import 'package:flutter_blog/ui/pages/auth/join_page/join_fm.dart';
 import 'package:flutter_blog/ui/pages/auth/login_page/login_fm.dart';
+import 'package:flutter_blog/ui/pages/auth/login_page/login_page.dart';
 import 'package:flutter_blog/ui/pages/post/list_page/post_list_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
@@ -95,7 +96,7 @@ class SessionGVM extends Notifier<SessionModel> {
 
     // 4. login 페이지 이동
     scaffoldKey.currentState!.openEndDrawer();
-    Navigator.pushNamed(mContext, "/login");
+    Navigator.pushNamedAndRemoveUntil(mContext, "/login", (route) => false);
   }
 
   Future<void> autoLogin() async {
@@ -103,7 +104,7 @@ class SessionGVM extends Notifier<SessionModel> {
     String? accessToken = await secureStorage.read(key: "accessToken");
 
     if (accessToken == null) {
-      Navigator.pushNamed(mContext, "/login");
+      Navigator.pushReplacement(mContext, MaterialPageRoute(builder: (_) => LoginPage()));
       return;
     }
 
@@ -114,7 +115,7 @@ class SessionGVM extends Notifier<SessionModel> {
       ScaffoldMessenger.of(mContext).showSnackBar(
         SnackBar(content: Text("${body["errorMessage"]}")),
       );
-      Navigator.pushNamed(mContext, "/login"); // 현재 페이지 제거하고 이동하는걸로 변경
+      Navigator.pushReplacement(mContext, MaterialPageRoute(builder: (_) => LoginPage()));
       return;
     }
 
@@ -128,7 +129,7 @@ class SessionGVM extends Notifier<SessionModel> {
     dio.options.headers["Authorization"] = user.accessToken;
 
     // 6. 게시글 목록 페이지 이동
-    Navigator.pushNamed(mContext, "/post/list");
+    Navigator.pushReplacement(mContext, MaterialPageRoute(builder: (_) => PostListPage()));
   }
 }
 

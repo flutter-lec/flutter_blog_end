@@ -3,19 +3,28 @@ import 'package:flutter_blog/data/model/post.dart';
 import 'package:flutter_blog/data/repository/post_repository.dart';
 import 'package:flutter_blog/main.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 /// 1. 창고 관리자
-final postListProvider = NotifierProvider<PostListVM, PostListModel?>(() {
+final postListProvider = AutoDisposeNotifierProvider<PostListVM, PostListModel?>(() {
   return PostListVM();
 });
 
 /// 2. 창고
-class PostListVM extends Notifier<PostListModel?> {
+class PostListVM extends AutoDisposeNotifier<PostListModel?> {
   final mContext = navigatorKey.currentContext!;
+  final refreshCtrl = RefreshController();
 
   @override
   PostListModel? build() {
     init();
+
+    ref.onDispose(() {
+      refreshCtrl.dispose();
+      Logger().d("PostListVM 파괴됨");
+    });
+
     return null;
   }
 
@@ -28,6 +37,8 @@ class PostListVM extends Notifier<PostListModel?> {
       return;
     }
     state = PostListModel.fromMap(body["response"]);
+
+    refreshCtrl.refreshCompleted();
   }
 
   void notifyUpdateOne(Post post) {
@@ -68,6 +79,30 @@ class PostListVM extends Notifier<PostListModel?> {
 
     // 4. 글쓰기 화면 pop
     Navigator.pop(mContext);
+  }
+
+  Future<void> nextList() async {
+    PostListModel prevModel = state!;
+
+    if (prevModel.isLast) {
+      await Future.delayed(Duration(milliseconds: 500));
+      refreshCtrl.loadComplete();
+      return;
+    }
+
+    Map<String, dynamic> body = await PostRepository().getList(page: prevModel.pageNumber + 1);
+    if (!body["success"]) {
+      ScaffoldMessenger.of(mContext).showSnackBar(
+        SnackBar(content: Text("게시글 로딩 실패 : ${body["errorMessage"]}")),
+      );
+      refreshCtrl.loadComplete();
+      return;
+    }
+
+    PostListModel nextModel = PostListModel.fromMap(body["response"]);
+
+    state = nextModel.copyWith(posts: [...prevModel.posts, ...nextModel.posts]);
+    refreshCtrl.loadComplete();
   }
 }
 
